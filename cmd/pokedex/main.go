@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/meraiku/pokedex/internal/repl"
+)
 
 func main() {
-	fmt.Println("ayaya")
+	repl.StartREPL()
 }
