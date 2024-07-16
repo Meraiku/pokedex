@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/meraiku/pokedex/internal/cmd"
+	"github.com/meraiku/pokedex/internal/pokeapi"
 )
 
 const promt = "pokedex"
@@ -14,6 +15,7 @@ const promt = "pokedex"
 func StartREPL() {
 	input := bufio.NewScanner(os.Stdin)
 	cli := cmd.GetCommands()
+	config := pokeapi.NewPokeMap()
 
 	for {
 		fmt.Printf("%v > ", promt)
@@ -29,7 +31,7 @@ func StartREPL() {
 			fmt.Println("Unknown command")
 			continue
 		}
-		err := command.Callback()
+		err := command.Callback(config)
 		if err != nil {
 			fmt.Println(err)
 		}

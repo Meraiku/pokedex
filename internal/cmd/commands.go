@@ -3,12 +3,14 @@ package cmd
 import (
 	"fmt"
 	"os"
+
+	"github.com/meraiku/pokedex/internal/pokeapi"
 )
 
 type CliCommand struct {
 	Name        string
 	Description string
-	Callback    func() error
+	Callback    func(c *pokeapi.PokeMap) error
 }
 
 func GetCommands() map[string]CliCommand {
@@ -23,10 +25,20 @@ func GetCommands() map[string]CliCommand {
 			Description: "Exit the Pokedex",
 			Callback:    commandExit,
 		},
+		"map": {
+			Name:        "map",
+			Description: "Dispays list of 20 maps",
+			Callback:    commandMap,
+		},
+		"mapb": {
+			Name:        "mapb",
+			Description: "Going back in maps",
+			Callback:    commandMapb,
+		},
 	}
 }
 
-func commandHelp() error {
+func commandHelp(c *pokeapi.PokeMap) error {
 
 	fmt.Println("")
 	fmt.Println("Welcome to the Pokedex!")
@@ -41,7 +53,24 @@ func commandHelp() error {
 	return nil
 }
 
-func commandExit() error {
+func commandExit(c *pokeapi.PokeMap) error {
 	os.Exit(0)
+	return nil
+}
+
+func commandMap(c *pokeapi.PokeMap) error {
+	c.NextMap()
+
+	for _, v := range c.Results {
+		fmt.Println(v.Name)
+	}
+	return nil
+}
+
+func commandMapb(c *pokeapi.PokeMap) error {
+	c.PreviousMap()
+	for _, v := range c.Results {
+		fmt.Println(v.Name)
+	}
 	return nil
 }
