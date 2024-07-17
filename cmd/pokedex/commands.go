@@ -1,6 +1,7 @@
-package cmd
+package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -10,7 +11,7 @@ import (
 type CliCommand struct {
 	Name        string
 	Description string
-	Callback    func(c *pokeapi.PokeMap) error
+	Callback    func(c *config) error
 }
 
 func GetCommands() map[string]CliCommand {
@@ -38,7 +39,7 @@ func GetCommands() map[string]CliCommand {
 	}
 }
 
-func commandHelp(c *pokeapi.PokeMap) error {
+func commandHelp(c *config) error {
 
 	fmt.Println("")
 	fmt.Println("Welcome to the Pokedex!")
@@ -53,26 +54,42 @@ func commandHelp(c *pokeapi.PokeMap) error {
 	return nil
 }
 
-func commandExit(c *pokeapi.PokeMap) error {
+func commandExit(c *config) error {
 	os.Exit(0)
 	return nil
 }
 
-func commandMap(c *pokeapi.PokeMap) error {
-	c.NextMap()
-
-	for _, v := range c.Results {
-		fmt.Println(v.Name)
+func commandMap(c *config) error {
+	locations, err := c.pokeAPIClient.LocationList(c.nextLocationAreaURL)
+	if err != nil {
+		return err
 	}
+	c.nextLocationAreaURL = locations.Next
+	c.previousLocationAreaURL = locations.Previous
+
+	printLocations(locations)
 	return nil
 }
 
-func commandMapb(c *pokeapi.PokeMap) error {
-	if err := c.PreviousMap(); err != nil {
+func commandMapb(c *config) error {
+	if c.previousLocationAreaURL == nil {
+		return errors.New("can't go back in maps")
+	}
+
+	locations, err := c.pokeAPIClient.LocationList(c.previousLocationAreaURL)
+	if err != nil {
 		return err
 	}
-	for _, v := range c.Results {
-		fmt.Println(v.Name)
-	}
+	c.nextLocationAreaURL = locations.Next
+	c.previousLocationAreaURL = locations.Previous
+
+	printLocations(locations)
 	return nil
+}
+
+func printLocations(locations *pokeapi.PokeMap) {
+	fmt.Println("Locatinos: ")
+	for _, v := range locations.Results {
+		fmt.Printf("  - %s\n", v.Name)
+	}
 }

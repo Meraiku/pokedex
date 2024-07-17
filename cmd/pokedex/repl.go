@@ -1,21 +1,17 @@
-package repl
+package main
 
 import (
 	"bufio"
 	"fmt"
 	"os"
 	"strings"
-
-	"github.com/meraiku/pokedex/internal/cmd"
-	"github.com/meraiku/pokedex/internal/pokeapi"
 )
 
 const promt = "pokedex"
 
-func StartREPL() {
+func StartREPL(config *config) {
 	input := bufio.NewScanner(os.Stdin)
-	cli := cmd.GetCommands()
-	config := pokeapi.NewPokeMap()
+	cli := GetCommands()
 
 	for {
 		fmt.Printf("%v > ", promt)

@@ -5,15 +5,17 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
-type Location interface {
-	NextMap() error
-	PreviousMap() error
+const startURL = "https://pokeapi.co/api/v2"
+
+type Client struct {
+	httpClient http.Client
 }
 
 type PokeMap struct {
-	Next     string  `json:"next"`
+	Next     *string `json:"next"`
 	Previous *string `json:"previous"`
 	Results  []struct {
 		Name string `json:"name"`
@@ -21,58 +23,44 @@ type PokeMap struct {
 	} `json:"results"`
 }
 
-func NewPokeMap() *PokeMap {
-	return &PokeMap{}
+func NewClient() *Client {
+	return &Client{
+		httpClient: http.Client{
+			Timeout: time.Minute,
+		},
+	}
 }
 
-func (p *PokeMap) NextMap() error {
+func (c *Client) LocationList(url *string) (*PokeMap, error) {
+	pokeMap := PokeMap{}
+	if url == nil {
+		endpoint := "/location/"
+		fullURL := startURL + endpoint
+		url = &fullURL
+	}
 
-	err := getRequestToStruct(p, p.Next)
+	request, err := http.NewRequest("GET", *url, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
-}
-
-func (p *PokeMap) PreviousMap() error {
-	if p.Previous == nil {
-		return fmt.Errorf("can't go back in maps")
-	}
-	err := getRequestToStruct(p, *p.Previous)
+	res, err := c.httpClient.Do(request)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
 
-}
+	if res.StatusCode > 399 {
+		return nil, fmt.Errorf("reqponse failed with status code: %d", res.StatusCode)
+	}
 
-func getRequestToStruct(p *PokeMap, direction string) error {
-	if direction == "" {
-		direction = "https://pokeapi.co/api/v2/location"
-	}
-	res, err := http.Get(direction)
-	if err != nil {
-		return err
-	}
 	body, err := io.ReadAll(res.Body)
-	res.Body.Close()
-	if res.StatusCode > 299 {
-		return fmt.Errorf("response failed with status code: %d and", res.StatusCode)
-	}
+	defer res.Body.Close()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	err = unmarhsal(body, p)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
-func unmarhsal(data []byte, p *PokeMap) error {
-	err := json.Unmarshal(data, p)
+	err = json.Unmarshal(body, &pokeMap)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return &pokeMap, nil
 }

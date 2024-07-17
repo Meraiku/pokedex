@@ -1,9 +1,19 @@
 package main
 
 import (
-	"github.com/meraiku/pokedex/internal/repl"
+	"github.com/meraiku/pokedex/internal/pokeapi"
 )
 
+type config struct {
+	pokeAPIClient           pokeapi.Client
+	nextLocationAreaURL     *string
+	previousLocationAreaURL *string
+}
+
 func main() {
-	repl.StartREPL()
+	cfg := config{
+		pokeAPIClient: *pokeapi.NewClient(),
+	}
+
+	StartREPL(&cfg)
 }
