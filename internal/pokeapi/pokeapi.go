@@ -2,7 +2,6 @@ package pokeapi
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,7 +13,6 @@ type Location interface {
 }
 
 type PokeMap struct {
-	Count    int     `json:"count"`
 	Next     string  `json:"next"`
 	Previous *string `json:"previous"`
 	Results  []struct {
@@ -38,8 +36,7 @@ func (p *PokeMap) NextMap() error {
 
 func (p *PokeMap) PreviousMap() error {
 	if p.Previous == nil {
-		fmt.Println("Cant")
-		return fmt.Errorf("Can't go back in maps")
+		return fmt.Errorf("can't go back in maps")
 	}
 	err := getRequestToStruct(p, *p.Previous)
 	if err != nil {
@@ -55,12 +52,12 @@ func getRequestToStruct(p *PokeMap, direction string) error {
 	}
 	res, err := http.Get(direction)
 	if err != nil {
-		return errors.New("Cant acces map")
+		return err
 	}
 	body, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if res.StatusCode > 299 {
-		return errors.New("Response failed with status code: %d and\nbody: %s\n")
+		return fmt.Errorf("response failed with status code: %d and", res.StatusCode)
 	}
 	if err != nil {
 		return err

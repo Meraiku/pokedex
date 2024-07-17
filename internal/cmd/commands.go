@@ -32,7 +32,7 @@ func GetCommands() map[string]CliCommand {
 		},
 		"mapb": {
 			Name:        "mapb",
-			Description: "Going back in maps",
+			Description: "Displays list of 20 previous maps",
 			Callback:    commandMapb,
 		},
 	}
@@ -68,7 +68,9 @@ func commandMap(c *pokeapi.PokeMap) error {
 }
 
 func commandMapb(c *pokeapi.PokeMap) error {
-	c.PreviousMap()
+	if err := c.PreviousMap(); err != nil {
+		return err
+	}
 	for _, v := range c.Results {
 		fmt.Println(v.Name)
 	}
