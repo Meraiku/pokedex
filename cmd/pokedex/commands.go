@@ -176,6 +176,10 @@ func commandCatch(c *config, args ...string) error {
 
 func commandInspect(c *config, args ...string) error {
 
+	if len(args) != 1 {
+		return errors.New("no pokemon name provided")
+	}
+
 	pokemonInfo, ok := c.player.Pokedex.Pokedex[args[0]]
 	if !ok {
 		return errors.New("you have not caught that pokemon")
