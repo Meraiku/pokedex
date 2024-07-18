@@ -21,11 +21,6 @@ func GetCommands() map[string]CliCommand {
 			Description: "Displays a help message",
 			Callback:    commandHelp,
 		},
-		"exit": {
-			Name:        "exit",
-			Description: "Exit the Pokedex",
-			Callback:    commandExit,
-		},
 		"map": {
 			Name:        "map",
 			Description: "Dispays list of 20 maps",
@@ -35,6 +30,11 @@ func GetCommands() map[string]CliCommand {
 			Name:        "mapb",
 			Description: "Displays list of 20 previous maps",
 			Callback:    commandMapb,
+		},
+		"exit": {
+			Name:        "exit",
+			Description: "Exit the Pokedex",
+			Callback:    commandExit,
 		},
 	}
 }
@@ -60,15 +60,18 @@ func commandExit(c *config) error {
 }
 
 func commandMap(c *config) error {
+
 	locations, err := c.pokeAPIClient.LocationList(c.nextLocationAreaURL)
 	if err != nil {
 		return err
 	}
+
 	c.nextLocationAreaURL = locations.Next
 	c.previousLocationAreaURL = locations.Previous
 
 	printLocations(locations)
 	return nil
+
 }
 
 func commandMapb(c *config) error {
@@ -80,6 +83,7 @@ func commandMapb(c *config) error {
 	if err != nil {
 		return err
 	}
+
 	c.nextLocationAreaURL = locations.Next
 	c.previousLocationAreaURL = locations.Previous
 
@@ -88,7 +92,7 @@ func commandMapb(c *config) error {
 }
 
 func printLocations(locations *pokeapi.PokeMap) {
-	fmt.Println("Locatinos: ")
+	fmt.Println("Locatinos areas: ")
 	for _, v := range locations.Results {
 		fmt.Printf("  - %s\n", v.Name)
 	}
