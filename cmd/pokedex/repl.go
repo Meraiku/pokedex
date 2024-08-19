@@ -52,19 +52,9 @@ func StartMsg() {
 	fmt.Println("Here you can: ")
 	cli := GetCommands()
 
-	for k, v := range cli {
-		switch k {
-		case "help":
-			continue
-		case "exit":
-			continue
-		case "mapb":
-			continue
-		case "map":
-			continue
-		default:
+	for _, v := range cli {
+		if v.Starter {
 			fmt.Printf(" -%s\n", v.Description)
-
 		}
 	}
 	fmt.Println()

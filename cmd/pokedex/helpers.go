@@ -18,8 +18,6 @@ func connectDB() (*bun.DB, error) {
 		return nil, errors.New("DATABASE_URL environment varible is not set")
 	}
 
-	fmt.Println("Statring connection with Postgres")
-
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(DB_URL)))
 
 	db := bun.NewDB(sqldb, pgdialect.New())
@@ -29,6 +27,5 @@ func connectDB() (*bun.DB, error) {
 		return nil, err
 	}
 
-	fmt.Println("DB Connection online!")
 	return db, nil
 }
