@@ -1,18 +1,20 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"math/rand"
 	"os"
 	"time"
 
-	"github.com/meraiku/pokedex/internal/pokeapi"
+	"github.com/meraiku/pokedex/cmd/pokedex/structs"
 )
 
 type CliCommand struct {
 	Name        string
 	Description string
+	Starter     bool
 	Callback    func(*config, ...string) error
 }
 
@@ -22,6 +24,16 @@ func GetCommands() map[string]CliCommand {
 			Name:        "help",
 			Description: "Displays a help message",
 			Callback:    commandHelp,
+		},
+		"create": {
+			Name:        "create",
+			Description: "Creates new user",
+			Callback:    commandCreate,
+		},
+		"select": {
+			Name:        "select",
+			Description: "Prints all users info",
+			Callback:    commandSelect,
 		},
 		"map": {
 			Name:        "map",
@@ -35,27 +47,31 @@ func GetCommands() map[string]CliCommand {
 		},
 		"explore": {
 			Name:        "explore {area name}",
-			Description: "Explore location-area to find pokemons",
+			Description: "Explore areas to find pokemons",
+			Starter:     true,
 			Callback:    commandExplore,
 		},
 		"catch": {
 			Name:        "catch {pokemon name}",
 			Description: "Throw pokeball to catch pokemon",
+			Starter:     true,
 			Callback:    commandCatch,
 		},
 		"inspect": {
 			Name:        "inspect {pokemon name}",
 			Description: "Inspect pokemon from your pokedex",
+			Starter:     true,
 			Callback:    commandInspect,
 		},
 		"pokedex": {
 			Name:        "pokedex",
 			Description: "Open your Pokedex",
+			Starter:     true,
 			Callback:    commandPokedex,
 		},
 		"exit": {
 			Name:        "exit",
-			Description: "Exit the Pokedex",
+			Description: "Quits application",
 			Callback:    commandExit,
 		},
 	}
@@ -113,7 +129,7 @@ func commandMapb(c *config, args ...string) error {
 	return nil
 }
 
-func printLocations(locations *pokeapi.PokeMap) {
+func printLocations(locations *structs.PokeMap) {
 	fmt.Println("Locatinos areas: ")
 	for _, v := range locations.Results {
 		fmt.Printf("  - %s\n", v.Name)
@@ -164,7 +180,7 @@ func commandCatch(c *config, args ...string) error {
 	if chacnceToCatch > pokemons.BaseExperience/2 {
 
 		fmt.Printf("%s was caught!\n", pokemonName)
-		c.player.Pokedex.Pokedex[pokemonName] = *pokemons
+		c.db.GetUserInfo().Pokedex.Pokedex[pokemonName] = *pokemons
 		return nil
 	}
 
@@ -180,7 +196,7 @@ func commandInspect(c *config, args ...string) error {
 		return errors.New("no pokemon name provided")
 	}
 
-	pokemonInfo, ok := c.player.Pokedex.Pokedex[args[0]]
+	pokemonInfo, ok := c.db.GetUserInfo().Pokedex.Pokedex[args[0]]
 	if !ok {
 		return errors.New("you have not caught that pokemon")
 	}
@@ -202,8 +218,39 @@ func commandInspect(c *config, args ...string) error {
 func commandPokedex(c *config, args ...string) error {
 	fmt.Println("Your Pokedex: ")
 
-	for k := range c.player.Pokedex.Pokedex {
+	for k := range c.db.GetUserInfo().Pokedex.Pokedex {
 		fmt.Printf("  - %s\n", k)
 	}
+	return nil
+}
+
+func commandCreate(c *config, args ...string) error {
+	scan := bufio.NewScanner(os.Stdin)
+
+	fmt.Print("Your name: ")
+	scan.Scan()
+
+	name := scan.Text()
+
+	fmt.Print("Your team: ")
+	scan.Scan()
+
+	team := scan.Text()
+
+	if err := c.db.CreateUser(name, team); err != nil {
+		fmt.Println("Something went wrong")
+		return err
+	}
+
+	fmt.Println("User created!")
+
+	return nil
+}
+
+func commandSelect(c *config, args ...string) error {
+	if err := c.db.GetUsers(); err != nil {
+		return err
+	}
+
 	return nil
 }
