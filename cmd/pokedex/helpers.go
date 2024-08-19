@@ -6,9 +6,13 @@ import (
 	"os"
 
 	"errors"
+
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/driver/pgdriver"
 )
 
-func connectDB() (*sql.DB, error) {
+func connectDB() (*bun.DB, error) {
 	DB_URL := os.Getenv("DATABASE_URL")
 	if DB_URL == "" {
 		return nil, errors.New("DATABASE_URL environment varible is not set")
@@ -16,12 +20,11 @@ func connectDB() (*sql.DB, error) {
 
 	fmt.Println("Statring connection with Postgres")
 
-	db, err := sql.Open("postgres", DB_URL)
-	if err != nil {
-		return nil, fmt.Errorf("error connecting database: %s", err)
-	}
+	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(DB_URL)))
 
-	if err = db.Ping(); err != nil {
+	db := bun.NewDB(sqldb, pgdialect.New())
+
+	if err := db.Ping(); err != nil {
 		fmt.Println("DB Ping failed")
 		return nil, err
 	}
