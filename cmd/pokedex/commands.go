@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/meraiku/pokedex/internal/pokeapi"
+	"github.com/meraiku/pokedex/cmd/pokedex/structs"
 )
 
 type CliCommand struct {
@@ -113,7 +113,7 @@ func commandMapb(c *config, args ...string) error {
 	return nil
 }
 
-func printLocations(locations *pokeapi.PokeMap) {
+func printLocations(locations *structs.PokeMap) {
 	fmt.Println("Locatinos areas: ")
 	for _, v := range locations.Results {
 		fmt.Printf("  - %s\n", v.Name)
@@ -164,7 +164,7 @@ func commandCatch(c *config, args ...string) error {
 	if chacnceToCatch > pokemons.BaseExperience/2 {
 
 		fmt.Printf("%s was caught!\n", pokemonName)
-		c.player.Pokedex.Pokedex[pokemonName] = *pokemons
+		c.db.GetUserInfo().Pokedex.Pokedex[pokemonName] = *pokemons
 		return nil
 	}
 
@@ -180,7 +180,7 @@ func commandInspect(c *config, args ...string) error {
 		return errors.New("no pokemon name provided")
 	}
 
-	pokemonInfo, ok := c.player.Pokedex.Pokedex[args[0]]
+	pokemonInfo, ok := c.db.GetUserInfo().Pokedex.Pokedex[args[0]]
 	if !ok {
 		return errors.New("you have not caught that pokemon")
 	}
@@ -202,7 +202,7 @@ func commandInspect(c *config, args ...string) error {
 func commandPokedex(c *config, args ...string) error {
 	fmt.Println("Your Pokedex: ")
 
-	for k := range c.player.Pokedex.Pokedex {
+	for k := range c.db.GetUserInfo().Pokedex.Pokedex {
 		fmt.Printf("  - %s\n", k)
 	}
 	return nil

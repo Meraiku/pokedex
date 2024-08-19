@@ -1,13 +1,15 @@
 package database
 
-import "database/sql"
+import (
+	"github.com/uptrace/bun"
+)
 
 type DB struct {
-	db *sql.DB
+	db *bun.DB
 }
 
-func NewDB() DB {
-	return DB{
-		db: &sql.DB{},
+func NewDB(db *bun.DB) *DB {
+	return &DB{
+		db: db,
 	}
 }

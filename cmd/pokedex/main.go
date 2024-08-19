@@ -6,13 +6,12 @@ import (
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-	"github.com/meraiku/pokedex/internal/pokeapi"
-	"github.com/meraiku/pokedex/internal/world"
+	"github.com/meraiku/pokedex/internal/database"
 )
 
 type config struct {
-	player                  world.Player
-	pokeAPIClient           pokeapi.Client
+	db                      *database.DB
+	pokeAPIClient           Client
 	nextLocationAreaURL     *string
 	previousLocationAreaURL *string
 }
@@ -31,8 +30,8 @@ func main() {
 	defer db.Close()
 
 	cfg := config{
-		pokeAPIClient: *pokeapi.NewClient(time.Hour),
-		player:        *StartMsg(),
+		pokeAPIClient: *NewClient(time.Hour),
+		db:            database.NewDB(db),
 	}
 	StartREPL(&cfg)
 }
